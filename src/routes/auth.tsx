@@ -35,7 +35,7 @@ function AuthPage() {
     if (mode === "in") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       setBusy(false);
-      if (error) return toast.error("Email ou mot de passe incorrect");
+      if (error) { toast.error("Email ou mot de passe incorrect"); return; }
       nav({ to: "/carnet" });
     } else {
       const { error } = await supabase.auth.signUp({
@@ -44,14 +44,14 @@ function AuthPage() {
         options: { emailRedirectTo: `${window.location.origin}/carnet` },
       });
       setBusy(false);
-      if (error) return toast.error(error.message);
+      if (error) { toast.error(error.message); return; }
       toast.success("Vérifiez votre boîte mail pour confirmer votre compte.");
     }
   }
 
   async function google() {
     const r = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/auth" });
-    if (r.error) return toast.error("Connexion Google impossible");
+    if (r.error) { toast.error("Connexion Google impossible"); return; }
     if (r.redirected) return;
     nav({ to: "/carnet" });
   }

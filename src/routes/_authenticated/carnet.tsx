@@ -65,30 +65,30 @@ function CarnetPage() {
     e.preventDefault();
     if (!me) return;
     const value = parseInt(amount.replace(/\D/g, ""), 10);
-    if (!value) return toast.error("Montant manquant");
+    if (!value) { toast.error("Montant manquant"); return; }
     setBusy(true);
     let cust = customers.find((c) => c.id === customerId);
     if (customerId === "new") {
       if (!newName.trim() || newPhone.replace(/\D/g, "").length < 8) {
         setBusy(false);
-        return toast.error("Nom et numéro WhatsApp du client requis");
+        { toast.error("Nom et numéro WhatsApp du client requis"); return; }
       }
       const { data, error } = await supabase
         .from("customers")
         .insert({ shop_id: me.id, name: newName.trim(), phone: newPhone.trim() })
         .select()
         .single();
-      if (error || !data) { setBusy(false); return toast.error("Client non créé"); }
+      if (error || !data) { setBusy(false); { toast.error("Client non créé"); return; } }
       cust = { ...data, balance: 0, last: null, lastReminder: null };
     }
-    if (!cust) { setBusy(false); return toast.error("Choisissez un client"); }
+    if (!cust) { setBusy(false); { toast.error("Choisissez un client"); return; } }
     const { data: entry, error } = await supabase
       .from("entries")
       .insert({ shop_id: me.id, customer_id: cust.id, kind, amount: value, products: products.trim() || null })
       .select()
       .single();
     setBusy(false);
-    if (error || !entry) return toast.error(me.active ? "Enregistrement impossible" : "Abonnement expiré");
+    if (error || !entry) { toast.error(me.active ? "Enregistrement impossible" : "Abonnement expiré"); return; }
     const balance = cust.balance + (kind === "credit" ? value : -value);
     const msg = entryMessage({ shop: me.profile.shop_name, name: cust.name, kind, amount: value, products: entry.products, at: entry.created_at, balance, token: cust.share_token });
     window.open(waLink(cust.phone, msg), "_blank");

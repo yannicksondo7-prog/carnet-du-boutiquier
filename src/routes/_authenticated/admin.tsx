@@ -44,14 +44,14 @@ function AdminPage() {
       moov_enabled: form.moov_enabled, moov_number: form.moov_number, card_enabled: form.card_enabled,
       updated_at: new Date().toISOString(),
     }).eq("id", 1);
-    if (error) return toast.error("Échec");
+    if (error) { toast.error("Échec"); return; }
     toast.success("Réglages enregistrés");
     qc.invalidateQueries({ queryKey: ["me"] });
   }
 
   async function review(id: string, approve: boolean) {
     const { error } = await supabase.rpc("review_payment", { _id: id, _approve: approve });
-    if (error) return toast.error("Échec");
+    if (error) { toast.error("Échec"); return; }
     toast.success(approve ? "Abonnement prolongé" : "Paiement refusé");
     qc.invalidateQueries({ queryKey: ["admin"] });
   }

@@ -61,7 +61,7 @@ function Index() {
                 <div className="font-medium">{p}</div>
                 <div className="text-xs text-muted-foreground">{d}</div>
               </div>
-              <div className={a.startsWith("+") ? "font-bold text-destructive" : "font-bold text-success"}>{a}</div>
+              <div className={a?.startsWith("+") ? "font-bold text-destructive" : "font-bold text-success"}>{a}</div>
             </div>
           ))}
         </div>

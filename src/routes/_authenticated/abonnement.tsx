@@ -36,11 +36,11 @@ function SubPage() {
 
   async function pay(e: React.FormEvent) {
     e.preventDefault();
-    if (!method || !ref.trim()) return toast.error("Choisissez un moyen et saisissez la référence");
+    if (!method || !ref.trim()) { toast.error("Choisissez un moyen et saisissez la référence"); return; }
     const { error } = await supabase.from("payments").insert({
       user_id: me!.id, method, months, amount: s.monthly_price * months, reference: ref.trim(), payer_phone: phone.trim() || null,
     });
-    if (error) return toast.error("Envoi impossible");
+    if (error) { toast.error("Envoi impossible"); return; }
     toast.success("Paiement envoyé, validation sous peu.");
     setRef(""); setPhone("");
     qc.invalidateQueries({ queryKey: ["my-payments"] });
