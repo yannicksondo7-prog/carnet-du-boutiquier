@@ -38,6 +38,11 @@ function AuthPage() {
       if (error) { toast.error("Email ou mot de passe incorrect"); return; }
       nav({ to: "/carnet" });
     } else {
+      if (!/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/.test(password)) {
+        setBusy(false);
+        toast.error("Le mot de passe doit mélanger lettres et chiffres uniquement (6 caractères minimum).");
+        return;
+      }
       const { error } = await supabase.auth.signUp({
         email,
         password,
@@ -75,6 +80,7 @@ function AuthPage() {
           <div>
             <Label htmlFor="pw">Mot de passe</Label>
             <Input id="pw" type="password" required minLength={6} value={password} onChange={(e) => setPassword(e.target.value)} />
+            {mode === "up" && <p className="mt-1 text-xs text-muted-foreground">Lettres et chiffres uniquement, au moins un de chaque (ex : boutik26).</p>}
           </div>
           <Button className="w-full" disabled={busy}>
             {mode === "in" ? "Se connecter" : "Créer mon compte"}
