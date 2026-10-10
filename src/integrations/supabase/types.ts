@@ -14,16 +14,220 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      app_settings: {
+        Row: {
+          card_enabled: boolean
+          currency: string
+          id: number
+          monthly_price: number
+          moov_enabled: boolean
+          moov_number: string | null
+          orange_enabled: boolean
+          orange_number: string | null
+          reminder_days: number
+          updated_at: string
+        }
+        Insert: {
+          card_enabled?: boolean
+          currency?: string
+          id?: number
+          monthly_price?: number
+          moov_enabled?: boolean
+          moov_number?: string | null
+          orange_enabled?: boolean
+          orange_number?: string | null
+          reminder_days?: number
+          updated_at?: string
+        }
+        Update: {
+          card_enabled?: boolean
+          currency?: string
+          id?: number
+          monthly_price?: number
+          moov_enabled?: boolean
+          moov_number?: string | null
+          orange_enabled?: boolean
+          orange_number?: string | null
+          reminder_days?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          phone: string
+          share_token: string
+          shop_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          phone: string
+          share_token?: string
+          shop_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          share_token?: string
+          shop_id?: string
+        }
+        Relationships: []
+      }
+      entries: {
+        Row: {
+          amount: number
+          created_at: string
+          customer_id: string
+          id: string
+          kind: string
+          notified_at: string | null
+          products: string | null
+          reminded_at: string | null
+          shop_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          customer_id: string
+          id?: string
+          kind: string
+          notified_at?: string | null
+          products?: string | null
+          reminded_at?: string | null
+          shop_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          customer_id?: string
+          id?: string
+          kind?: string
+          notified_at?: string | null
+          products?: string | null
+          reminded_at?: string | null
+          shop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entries_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          method: string
+          months: number
+          payer_phone: string | null
+          reference: string
+          reviewed_at: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          method: string
+          months?: number
+          payer_phone?: string | null
+          reference: string
+          reviewed_at?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          method?: string
+          months?: number
+          payer_phone?: string | null
+          reference?: string
+          reviewed_at?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          owner_name: string | null
+          phone: string | null
+          shop_name: string
+          subscription_until: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          owner_name?: string | null
+          phone?: string | null
+          shop_name?: string
+          subscription_until?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_name?: string | null
+          phone?: string | null
+          shop_name?: string
+          subscription_until?: string | null
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      client_ledger: { Args: { _token: string }; Returns: Json }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      review_payment: {
+        Args: { _approve: boolean; _id: string }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +354,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const
