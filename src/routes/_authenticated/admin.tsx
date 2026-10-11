@@ -36,6 +36,13 @@ function AdminPage() {
   if (!form || !data) return <AppShell><p>Chargement…</p></AppShell>;
   const shopName = (id: string) => data.profiles.find((p) => p.id === id)?.shop_name ?? "—";
   const activeCount = data.profiles.filter((p) => p.subscription_until && new Date(p.subscription_until) > new Date()).length;
+  const approved = data.payments.filter((p) => p.status === "approved");
+  const paidMonths = (id: string) => approved.filter((p) => p.user_id === id).reduce((s, p) => s + p.months, 0);
+  const totalSubscribers = new Set(approved.map((p) => p.user_id)).size;
+  const monthsSince = (d: string) => {
+    const a = new Date(d), b = new Date();
+    return Math.max(1, (b.getFullYear() - a.getFullYear()) * 12 + b.getMonth() - a.getMonth() + (b.getDate() >= a.getDate() ? 1 : 0));
+  };
 
   async function saveSettings() {
     const { error } = await supabase.from("app_settings").update({
@@ -61,8 +68,8 @@ function AdminPage() {
   return (
     <AppShell>
       <h1 className="text-3xl font-extrabold">Administration</h1>
-      <div className="mt-4 grid grid-cols-3 gap-3">
-        {[["Boutiques", data.profiles.length], ["Abonnés actifs", activeCount], ["En attente", data.payments.filter((p) => p.status === "pending").length]].map(([l, v]) => (
+      <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {[["Boutiques", data.profiles.length], ["Abonnés au total", totalSubscribers], ["Abonnés actifs", activeCount], ["En attente", data.payments.filter((p) => p.status === "pending").length]].map(([l, v]) => (
           <div key={l} className="rounded-2xl border bg-card p-4"><div className="text-2xl font-extrabold">{v}</div><div className="text-sm text-muted-foreground">{l}</div></div>
         ))}
       </div>
@@ -114,12 +121,21 @@ function AdminPage() {
       <section className="mt-6">
         <h2 className="text-xl font-bold">Boutiques</h2>
         <ul className="mt-2 divide-y rounded-2xl border bg-card">
-          {data.profiles.map((p) => (
-            <li key={p.id} className="flex justify-between px-4 py-3 text-sm">
-              <span>{p.shop_name}{p.owner_name && ` · ${p.owner_name}`}</span>
-              <span className="text-muted-foreground">{p.subscription_until ? `jusqu'au ${stamp(p.subscription_until)}` : "—"}</span>
-            </li>
-          ))}
+          {data.profiles.map((p) => {
+            const used = monthsSince(p.created_at);
+            const paid = paidMonths(p.id);
+            return (
+              <li key={p.id} className="flex flex-wrap justify-between gap-2 px-4 py-3 text-sm">
+                <div>
+                  <div className="font-medium">{p.shop_name}{p.owner_name && ` · ${p.owner_name}`}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Utilise l'application depuis {used} mois · {paid} mois payés
+                  </div>
+                </div>
+                <span className="text-muted-foreground">{p.subscription_until ? `jusqu'au ${stamp(p.subscription_until)}` : "—"}</span>
+              </li>
+            );
+          })}
         </ul>
       </section>
     </AppShell>
