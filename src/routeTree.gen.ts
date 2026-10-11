@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as MotDePasseOublieRouteImport } from './routes/mot-de-passe-oublie'
 import { Route as AuthenticatedAbonnementRouteImport } from './routes/_authenticated/abonnement'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedCarnetRouteImport } from './routes/_authenticated/carnet'
@@ -30,6 +31,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MotDePasseOublieRoute = MotDePasseOublieRouteImport.update({
+  id: '/mot-de-passe-oublie',
+  path: '/mot-de-passe-oublie',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAbonnementRoute = AuthenticatedAbonnementRouteImport.update({
@@ -61,6 +67,7 @@ const AuthenticatedClientIdRoute = AuthenticatedClientIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/abonnement': typeof AuthenticatedAbonnementRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/carnet': typeof AuthenticatedCarnetRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/abonnement': typeof AuthenticatedAbonnementRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/carnet': typeof AuthenticatedCarnetRoute
@@ -81,6 +89,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/mot-de-passe-oublie': typeof MotDePasseOublieRoute
   '/_authenticated/abonnement': typeof AuthenticatedAbonnementRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/carnet': typeof AuthenticatedCarnetRoute
@@ -92,6 +101,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/mot-de-passe-oublie'
     | '/abonnement'
     | '/admin'
     | '/carnet'
@@ -101,6 +111,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/mot-de-passe-oublie'
     | '/abonnement'
     | '/admin'
     | '/carnet'
@@ -111,6 +122,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/mot-de-passe-oublie'
     | '/_authenticated/abonnement'
     | '/_authenticated/admin'
     | '/_authenticated/carnet'
@@ -122,6 +134,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  MotDePasseOublieRoute: typeof MotDePasseOublieRoute
   CTokenRoute: typeof CTokenRoute
 }
 
@@ -146,6 +159,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mot-de-passe-oublie': {
+      id: '/mot-de-passe-oublie'
+      path: '/mot-de-passe-oublie'
+      fullPath: '/mot-de-passe-oublie'
+      preLoaderRoute: typeof MotDePasseOublieRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/abonnement': {
@@ -207,6 +227,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  MotDePasseOublieRoute: MotDePasseOublieRoute,
   CTokenRoute: CTokenRoute,
 }
 export const routeTree = rootRouteImport

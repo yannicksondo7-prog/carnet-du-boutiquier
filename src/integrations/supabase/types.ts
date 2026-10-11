@@ -124,6 +124,39 @@ export type Database = {
           },
         ]
       }
+      password_resets: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          reviewed_at: string | null
+          status: string
+          token_hash: string
+          used_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          token_hash: string
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          reviewed_at?: string | null
+          status?: string
+          token_hash?: string
+          used_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -225,6 +258,7 @@ export type Database = {
         Args: { _approve: boolean; _id: string }
         Returns: undefined
       }
+      user_id_by_email: { Args: { _email: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user"
