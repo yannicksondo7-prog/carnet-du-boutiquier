@@ -24,11 +24,12 @@ function AdminPage() {
     queryKey: ["admin"],
     enabled: !!me?.isAdmin,
     queryFn: async () => {
-      const [{ data: payments }, { data: profiles }] = await Promise.all([
+      const [{ data: payments }, { data: profiles }, { data: resets }] = await Promise.all([
         supabase.from("payments").select("*").order("created_at", { ascending: false }).limit(100),
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
+        supabase.from("password_resets").select("id, email, user_id, status, created_at, used_at").order("created_at", { ascending: false }).limit(50),
       ]);
-      return { payments: payments ?? [], profiles: profiles ?? [] };
+      return { payments: payments ?? [], profiles: profiles ?? [], resets: resets ?? [] };
     },
   });
 
@@ -60,6 +61,13 @@ function AdminPage() {
     const { error } = await supabase.rpc("review_payment", { _id: id, _approve: approve });
     if (error) { toast.error("Échec"); return; }
     toast.success(approve ? "Abonnement prolongé" : "Paiement refusé");
+    qc.invalidateQueries({ queryKey: ["admin"] });
+  }
+
+  async function reviewReset(id: string, approve: boolean) {
+    const { error } = await supabase.from("password_resets").update({ status: approve ? "approved" : "rejected", reviewed_at: new Date().toISOString() }).eq("id", id);
+    if (error) { toast.error("Échec"); return; }
+    toast.success(approve ? "Demande approuvée" : "Demande refusée");
     qc.invalidateQueries({ queryKey: ["admin"] });
   }
 
@@ -112,6 +120,29 @@ function AdminPage() {
                 </div>
               ) : (
                 <span className="font-bold">{p.status === "approved" ? "Validé" : "Refusé"}</span>
+              )}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="mt-6">
+        <h2 className="text-xl font-bold">Mots de passe oubliés</h2>
+        <ul className="mt-2 divide-y rounded-2xl border bg-card">
+          {data.resets.length === 0 && <li className="p-4 text-sm text-muted-foreground">Aucune demande.</li>}
+          {data.resets.map((r) => (
+            <li key={r.id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+              <div>
+                <div className="font-medium">{r.email}{r.user_id ? ` · ${shopName(r.user_id)}` : " · compte inconnu"}</div>
+                <div className="text-xs text-muted-foreground">{stamp(r.created_at)}</div>
+              </div>
+              {r.status === "pending" && r.user_id ? (
+                <div className="flex gap-2">
+                  <Button size="sm" onClick={() => reviewReset(r.id, true)}>Approuver</Button>
+                  <Button size="sm" variant="outline" onClick={() => reviewReset(r.id, false)}>Refuser</Button>
+                </div>
+              ) : (
+                <span className="font-bold">{r.used_at ? "Mot de passe changé" : r.status === "approved" ? "Approuvée" : r.status === "rejected" ? "Refusée" : "—"}</span>
               )}
             </li>
           ))}
