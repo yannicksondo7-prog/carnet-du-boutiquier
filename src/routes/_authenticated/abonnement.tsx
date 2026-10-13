@@ -33,11 +33,12 @@ function SubPage() {
     queryKey: ["my-referrals", me?.id],
     enabled: !!me,
     queryFn: async () => {
-      const [{ data: count }, { data: earnings }] = await Promise.all([
+      const [{ data: count }, { data: earnings }, { data: list }] = await Promise.all([
         supabase.rpc("my_referral_count"),
         supabase.from("referral_earnings").select("amount, paid_at").eq("referrer_id", me!.id),
+        supabase.rpc("my_referrals"),
       ]);
-      return { count: count ?? 0, earnings: earnings ?? [] };
+      return { count: count ?? 0, earnings: earnings ?? [], list: list ?? [] };
     },
   });
   if (!me) return <AppShell><p>Chargement…</p></AppShell>;
@@ -129,6 +130,23 @@ function SubPage() {
           <div><div className="text-xl font-extrabold">{refData?.count ?? 0}</div><div className="text-muted-foreground">Filleuls</div></div>
           <div><div className="text-xl font-extrabold">{fcfa(earnedTotal, s.currency)}</div><div className="text-muted-foreground">Gagné</div></div>
           <div><div className="text-xl font-extrabold">{fcfa(earnedDue, s.currency)}</div><div className="text-muted-foreground">À recevoir</div></div>
+        </div>
+        <div className="pt-2">
+          <h3 className="font-bold">Mes filleuls</h3>
+          <ul className="mt-2 divide-y rounded-xl border">
+            {(refData?.list ?? []).length === 0 && <li className="p-3 text-muted-foreground">Aucun filleul pour l'instant.</li>}
+            {(refData?.list ?? []).map((f, i) => {
+              const on = !!f.subscription_until && new Date(f.subscription_until) > new Date();
+              return (
+                <li key={i} className="flex items-center justify-between gap-2 px-3 py-2">
+                  <span><b>{f.shop_name}</b><br /><span className="text-muted-foreground">Inscrit le {stamp(f.created_at)}</span></span>
+                  <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${on ? "bg-primary text-primary-foreground" : "bg-secondary text-muted-foreground"}`}>
+                    {on ? "Actif" : "Expiré"}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </div>
 
