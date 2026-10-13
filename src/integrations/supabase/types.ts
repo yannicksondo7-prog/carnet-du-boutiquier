@@ -295,6 +295,14 @@ export type Database = {
         Returns: boolean
       }
       my_referral_count: { Args: never; Returns: number }
+      my_referrals: {
+        Args: never
+        Returns: {
+          created_at: string
+          shop_name: string
+          subscription_until: string
+        }[]
+      }
       review_payment: {
         Args: { _approve: boolean; _id: string }
         Returns: undefined
