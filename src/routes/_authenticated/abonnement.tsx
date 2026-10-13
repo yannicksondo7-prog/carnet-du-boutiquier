@@ -33,8 +33,8 @@ function SubPage() {
     queryKey: ["my-referrals", me?.id],
     enabled: !!me,
     queryFn: async () => {
-      const [{ count }, { data: earnings }] = await Promise.all([
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("referred_by", me!.id),
+      const [{ data: count }, { data: earnings }] = await Promise.all([
+        supabase.rpc("my_referral_count"),
         supabase.from("referral_earnings").select("amount, paid_at").eq("referrer_id", me!.id),
       ]);
       return { count: count ?? 0, earnings: earnings ?? [] };

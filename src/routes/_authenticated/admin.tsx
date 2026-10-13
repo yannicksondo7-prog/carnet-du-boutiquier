@@ -24,12 +24,13 @@ function AdminPage() {
     queryKey: ["admin"],
     enabled: !!me?.isAdmin,
     queryFn: async () => {
-      const [{ data: payments }, { data: profiles }, { data: resets }] = await Promise.all([
+      const [{ data: payments }, { data: profiles }, { data: resets }, { data: earnings }] = await Promise.all([
         supabase.from("payments").select("*").order("created_at", { ascending: false }).limit(100),
         supabase.from("profiles").select("*").order("created_at", { ascending: false }),
         supabase.from("password_resets").select("id, email, user_id, status, created_at, used_at").order("created_at", { ascending: false }).limit(50),
+        supabase.from("referral_earnings").select("*").order("created_at", { ascending: false }).limit(200),
       ]);
-      return { payments: payments ?? [], profiles: profiles ?? [], resets: resets ?? [] };
+      return { payments: payments ?? [], profiles: profiles ?? [], resets: resets ?? [], earnings: earnings ?? [] };
     },
   });
 
@@ -47,7 +48,7 @@ function AdminPage() {
 
   async function saveSettings() {
     const { error } = await supabase.from("app_settings").update({
-      monthly_price: +form.monthly_price, currency: form.currency, reminder_days: +form.reminder_days,
+      monthly_price: +form.monthly_price, referral_percent: Math.min(100, Math.max(0, +form.referral_percent || 0)), currency: form.currency, reminder_days: +form.reminder_days,
       orange_enabled: form.orange_enabled, orange_number: form.orange_number,
       moov_enabled: form.moov_enabled, moov_number: form.moov_number, card_enabled: form.card_enabled,
       updated_at: new Date().toISOString(),
@@ -71,6 +72,16 @@ function AdminPage() {
     qc.invalidateQueries({ queryKey: ["admin"] });
   }
 
+  async function markPaid(referrer: string) {
+    const { error } = await supabase.from("referral_earnings").update({ paid_at: new Date().toISOString() }).eq("referrer_id", referrer).is("paid_at", null);
+    if (error) { toast.error("Échec"); return; }
+    toast.success("Commission marquée comme versée");
+    qc.invalidateQueries({ queryKey: ["admin"] });
+  }
+  const dueByReferrer = Object.entries(
+    data.earnings.filter((e) => !e.paid_at).reduce<Record<string, number>>((m, e) => ({ ...m, [e.referrer_id]: (m[e.referrer_id] ?? 0) + e.amount }), {}),
+  );
+
   const set = (k: string, v: unknown) => setForm({ ...form, [k]: v });
 
   return (
@@ -88,6 +99,7 @@ function AdminPage() {
           <div><Label>Prix mensuel</Label><Input type="number" value={form.monthly_price} onChange={(e) => set("monthly_price", e.target.value)} /></div>
           <div><Label>Devise</Label><Input value={form.currency} onChange={(e) => set("currency", e.target.value)} /></div>
           <div><Label>Rappel doux après (jours)</Label><Input type="number" value={form.reminder_days} onChange={(e) => set("reminder_days", e.target.value)} /></div>
+          <div><Label>Commission parrainage (%)</Label><Input type="number" min={0} max={100} value={form.referral_percent} onChange={(e) => set("referral_percent", e.target.value)} /></div>
         </div>
         {[["orange", "Orange Money"], ["moov", "Moov Money"]].map(([k, l]) => (
           <div key={k} className="flex items-center gap-3">
@@ -123,6 +135,25 @@ function AdminPage() {
               )}
             </li>
           ))}
+        </ul>
+      </section>
+
+      <section className="mt-6">
+        <h2 className="text-xl font-bold">Commissions de parrainage à verser</h2>
+        <ul className="mt-2 divide-y rounded-2xl border bg-card">
+          {dueByReferrer.length === 0 && <li className="p-4 text-sm text-muted-foreground">Rien à verser.</li>}
+          {dueByReferrer.map(([id, amt]) => {
+            const pr = data.profiles.find((p) => p.id === id);
+            return (
+              <li key={id} className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+                <div>
+                  <div className="font-medium">{shopName(id)} · {fcfa(amt, form.currency)}</div>
+                  <div className="text-xs text-muted-foreground">{pr?.phone || "pas de téléphone"} · {data.profiles.filter((p) => p.referred_by === id).length} filleul(s)</div>
+                </div>
+                <Button size="sm" onClick={() => markPaid(id)}>Marquer versé</Button>
+              </li>
+            );
+          })}
         </ul>
       </section>
 

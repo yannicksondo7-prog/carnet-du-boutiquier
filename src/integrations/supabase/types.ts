@@ -294,6 +294,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      my_referral_count: { Args: never; Returns: number }
       review_payment: {
         Args: { _approve: boolean; _id: string }
         Returns: undefined
