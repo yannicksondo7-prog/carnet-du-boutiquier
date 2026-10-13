@@ -24,6 +24,7 @@ export type Database = {
           moov_number: string | null
           orange_enabled: boolean
           orange_number: string | null
+          referral_percent: number
           reminder_days: number
           updated_at: string
         }
@@ -36,6 +37,7 @@ export type Database = {
           moov_number?: string | null
           orange_enabled?: boolean
           orange_number?: string | null
+          referral_percent?: number
           reminder_days?: number
           updated_at?: string
         }
@@ -48,6 +50,7 @@ export type Database = {
           moov_number?: string | null
           orange_enabled?: boolean
           orange_number?: string | null
+          referral_percent?: number
           reminder_days?: number
           updated_at?: string
         }
@@ -202,6 +205,8 @@ export type Database = {
           id: string
           owner_name: string | null
           phone: string | null
+          referral_code: string | null
+          referred_by: string | null
           shop_name: string
           subscription_until: string | null
         }
@@ -210,6 +215,8 @@ export type Database = {
           id: string
           owner_name?: string | null
           phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           shop_name?: string
           subscription_until?: string | null
         }
@@ -218,8 +225,40 @@ export type Database = {
           id?: string
           owner_name?: string | null
           phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
           shop_name?: string
           subscription_until?: string | null
+        }
+        Relationships: []
+      }
+      referral_earnings: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          paid_at: string | null
+          payment_id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          payment_id?: string
+          referred_id?: string
+          referrer_id?: string
         }
         Relationships: []
       }
@@ -246,6 +285,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_referral: { Args: { _code: string }; Returns: boolean }
       client_ledger: { Args: { _token: string }; Returns: Json }
       has_role: {
         Args: {
@@ -254,6 +294,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      my_referral_count: { Args: never; Returns: number }
       review_payment: {
         Args: { _approve: boolean; _id: string }
         Returns: undefined
