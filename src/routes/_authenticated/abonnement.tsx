@@ -29,10 +29,24 @@ function SubPage() {
     queryKey: ["my-payments"],
     queryFn: async () => (await supabase.from("payments").select("*").order("created_at", { ascending: false })).data ?? [],
   });
+  const { data: refData } = useQuery({
+    queryKey: ["my-referrals", me?.id],
+    enabled: !!me,
+    queryFn: async () => {
+      const [{ count }, { data: earnings }] = await Promise.all([
+        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("referred_by", me!.id),
+        supabase.from("referral_earnings").select("amount, paid_at").eq("referrer_id", me!.id),
+      ]);
+      return { count: count ?? 0, earnings: earnings ?? [] };
+    },
+  });
   if (!me) return <AppShell><p>Chargement…</p></AppShell>;
   const s = me.settings;
   const methods = (["orange", "moov", "card"] as const).filter((m) => s[`${m}_enabled`]);
   const numberFor = (m: string) => (m === "orange" ? s.orange_number : m === "moov" ? s.moov_number : "");
+  const refLink = `${typeof window !== "undefined" ? window.location.origin : ""}/auth?ref=${me.profile.referral_code}`;
+  const earnedTotal = (refData?.earnings ?? []).reduce((t, e) => t + e.amount, 0);
+  const earnedDue = (refData?.earnings ?? []).filter((e) => !e.paid_at).reduce((t, e) => t + e.amount, 0);
 
   async function pay(e: React.FormEvent) {
     e.preventDefault();
@@ -100,6 +114,23 @@ function SubPage() {
           </li>
         ))}
       </ul>
+
+      <h2 className="mt-8 text-xl font-bold">Parrainage</h2>
+      <div className="mt-2 space-y-3 rounded-2xl border bg-card p-4 text-sm">
+        <p>Gagnez <b>{s.referral_percent} %</b> de chaque abonnement payé par les boutiquiers qui s'inscrivent avec votre lien.</p>
+        <div className="flex gap-2">
+          <Input readOnly value={refLink} />
+          <Button type="button" variant="secondary" onClick={() => { navigator.clipboard.writeText(refLink); toast.success("Lien copié"); }}>Copier</Button>
+        </div>
+        <Button type="button" variant="outline" asChild>
+          <a href={`https://wa.me/?text=${encodeURIComponent(`J'utilise Carnet pour noter les crédits de ma boutique. Essaie 14 jours gratuits : ${refLink}`)}`} target="_blank" rel="noreferrer">Partager sur WhatsApp</a>
+        </Button>
+        <div className="grid grid-cols-3 gap-2 pt-2 text-center">
+          <div><div className="text-xl font-extrabold">{refData?.count ?? 0}</div><div className="text-muted-foreground">Filleuls</div></div>
+          <div><div className="text-xl font-extrabold">{fcfa(earnedTotal, s.currency)}</div><div className="text-muted-foreground">Gagné</div></div>
+          <div><div className="text-xl font-extrabold">{fcfa(earnedDue, s.currency)}</div><div className="text-muted-foreground">À recevoir</div></div>
+        </div>
+      </div>
 
       <h2 className="mt-8 text-xl font-bold">Ma boutique</h2>
       <div className="mt-2 grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-[1fr_1fr_auto] sm:items-end">

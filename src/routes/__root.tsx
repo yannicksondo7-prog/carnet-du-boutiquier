@@ -120,8 +120,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
   useEffect(() => {
+    const ref = new URLSearchParams(window.location.search).get("ref");
+    if (ref) localStorage.setItem("carnet_ref", ref);
+    const claim = () => {
+      const code = localStorage.getItem("carnet_ref");
+      if (!code) return;
+      supabase.rpc("claim_referral", { _code: code }).then(({ error }) => { if (!error) localStorage.removeItem("carnet_ref"); });
+    };
+    supabase.auth.getSession().then(({ data }) => { if (data.session) claim(); });
     const { data } = supabase.auth.onAuthStateChange((event) => {
       if (event !== "SIGNED_IN" && event !== "SIGNED_OUT" && event !== "USER_UPDATED") return;
+      if (event === "SIGNED_IN") claim();
       router.invalidate();
       if (event !== "SIGNED_OUT") queryClient.invalidateQueries();
       else queryClient.clear();
