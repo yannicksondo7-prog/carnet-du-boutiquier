@@ -36,6 +36,13 @@
       "when": 1791852318500,
       "tag": "0004_referral_count",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791927458868,
+      "tag": "0005_my_referrals",
+      "breakpoints": true
     }
   ]
 }
