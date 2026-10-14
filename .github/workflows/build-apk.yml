@@ -48,13 +48,11 @@ jobs:
           EOF
           npx cap add android
           npx cap sync android    
-          - name: Compiler APK
+            - name: Compiler APK
         run: |
           cd android
           chmod +x gradlew
-          sed -i 's/kotlin-stdlib-jdk7:1.6.21/kotlin-stdlib-jdk7:1.8.22/g' app/build.gradle
-          sed -i 's/kotlin-stdlib-jdk8:1.6.21/kotlin-stdlib-jdk8:1.8.22/g' app/build.gradle
-          ./gradlew assembleDebug --exclude-task lint
+          ./gradlew assembleDebug
 
       - name: Publier le fichier APK
         uses: actions/upload-artifact@v4
