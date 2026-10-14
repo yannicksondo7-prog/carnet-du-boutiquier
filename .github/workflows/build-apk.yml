@@ -1,3 +1,4 @@
+
 name: Generer APK Carnet du Boutiquier
 
 on:
@@ -17,22 +18,25 @@ jobs:
           node-version: 20
 
       - name: Installer les dependances
-        run: npm NN
+        run: npm install
+
+      - name: Construire le site
+        run: npm run build
+
+      - name: Installer Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
 
       - name: Preparer Capacitor
-        run: npm install
+        run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          mkdir -p dist
-          echo '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body></body></html>' > dist/index.html
           cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.williamdigitallabs.carnetboutiquier",
             "appName": "Carnet du Boutiquier",
-            "webDir": "dist",
-            "server": {
-              "url": "https://carnet-du-boutiquier.lovable.app",
-              "cleartext": false
-            }
+            "webDir": "dist"
           }
           EOF
           npx cap add android
