@@ -32,14 +32,18 @@ jobs:
     
       - name: Preparer Capacitor
         run: |
-          mkdir -p dist
-          test -f dist/index.html || (echo "Le build web n'a pas genere dist/index.html" && exit 1)
           npm install @capacitor/core @capacitor/cli @capacitor/android
+          mkdir -p dist
+          echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>Chargement de Carnet du Boutiquier...</body></html>' > dist/index.html
           cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.williamdigitallabs.carnetboutiquier",
             "appName": "Carnet du Boutiquier",
-            "webDir": "dist"
+            "webDir": "dist",
+            "server": {
+              "url": "https://carnet-du-boutiquier.lovable.app",
+              "cleartext": false
+            }
           }
           EOF
           npx cap add android
