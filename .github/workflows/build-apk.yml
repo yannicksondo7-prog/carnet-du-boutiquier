@@ -17,10 +17,10 @@ jobs:
           node-version: 20
 
       - name: Installer les dependances
-        run: npm ci
+        run: npm NN
 
       - name: Preparer Capacitor
-        run: |
+        run: npm install
           npm install @capacitor/core @capacitor/cli @capacitor/android
           mkdir -p dist
           echo '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body></body></html>' > dist/index.html
