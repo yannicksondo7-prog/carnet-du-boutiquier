@@ -47,7 +47,7 @@ jobs:
           }
           EOF
           npx cap add android
-          npx cap sync android    
+          
             - name: Compiler APK
         run: |
           cd android
