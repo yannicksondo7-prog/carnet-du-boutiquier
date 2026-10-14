@@ -48,26 +48,12 @@ jobs:
           EOF
           npx cap add android
           npx cap sync android    
-          - name: Corriger les dependances Kotlin
-        run: |
-          cat >> android/build.gradle <<'EOF'
-
-          allprojects {
-              configurations.configureEach {
-                  resolutionStrategy.eachDependency { details ->
-                      if (details.requested.group == 'org.jetbrains.kotlin' &&
-                          (details.requested.name == 'kotlin-stdlib-jdk7' ||
-                           details.requested.name == 'kotlin-stdlib-jdk8')) {
-                          details.useVersion '1.8.22'
-                      }
-                  }
-              }
-          }
-          EOF
-      - name: Compiler APK
+          - name: Compiler APK
         run: |
           cd android
           chmod +x gradlew
+          sed -i 's/kotlin-stdlib-jdk7:1.6.21/kotlin-stdlib-jdk7:1.8.22/g' app/build.gradle
+          sed -i 's/kotlin-stdlib-jdk8:1.6.21/kotlin-stdlib-jdk8:1.8.22/g' app/build.gradle
           ./gradlew assembleDebug --exclude-task lint
 
       - name: Publier le fichier APK
