@@ -1,0 +1,51 @@
+name: Generer APK Carnet du Boutiquier
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Recuperer le projet
+        uses: actions/checkout@v4
+
+      - name: Installer Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Installer les dependances
+        run: npm ci
+
+      - name: Preparer Capacitor
+        run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+          mkdir -p dist
+          echo '<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head><body></body></html>' > dist/index.html
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.williamdigitallabs.carnetboutiquier",
+            "appName": "Carnet du Boutiquier",
+            "webDir": "dist",
+            "server": {
+              "url": "https://carnet-du-boutiquier.lovable.app",
+              "cleartext": false
+            }
+          }
+          EOF
+          npx cap add android
+          npx cap sync android
+
+      - name: Compiler APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
+
+      - name: Publier le fichier APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: carnet-du-boutiquier-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
