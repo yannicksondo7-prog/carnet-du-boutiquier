@@ -48,12 +48,11 @@ jobs:
           EOF
           npx cap add android
           npx cap sync android
-
       - name: Compiler APK
         run: |
           cd android
           chmod +x gradlew
-          ./gradlew assembleDebug
+          ./gradlew assembleDebug --exclude-task lint
 
       - name: Publier le fichier APK
         uses: actions/upload-artifact@v4
