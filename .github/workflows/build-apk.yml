@@ -29,8 +29,11 @@ jobs:
           distribution: temurin
           java-version: 21
 
+    
       - name: Preparer Capacitor
         run: |
+          mkdir -p dist
+          test -f dist/index.html || (echo "Le build web n'a pas genere dist/index.html" && exit 1)
           npm install @capacitor/core @capacitor/cli @capacitor/android
           cat > capacitor.config.json <<'EOF'
           {
