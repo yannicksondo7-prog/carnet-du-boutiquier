@@ -34,6 +34,12 @@ export function AppShell({ children }: { children: ReactNode }) {
             <Link to="/carnet" className={link}>Clients</Link>
             <Link to="/abonnement" className={link}>Abonnement</Link>
             {me?.isAdmin && <Link to="/admin" className={link}>Admin</Link>}
+            <a
+              href="https://github.com/yannicksondo7-prog/carnet-du-boutiquier/releases/latest/download/carnet-du-boutiquier.apk"
+              className="rounded-md bg-accent px-3 py-1.5 text-sm font-bold text-accent-foreground"
+            >
+              📱 App Android
+            </a>
           </nav>
           <Button size="sm" variant="ghost" onClick={async () => { await supabase.auth.signOut(); nav({ to: "/" }); }}>
             Sortir

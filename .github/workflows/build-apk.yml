@@ -1,8 +1,10 @@
-
 name: Generer APK Carnet du Boutiquier
 
 on:
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -17,21 +19,16 @@ jobs:
         with:
           node-version: 20
 
-      - name: Installer les dependances
-        run: npm install
-
-      - name: Construire le site
-        run: npm run build
-
       - name: Installer Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 21
 
-    
       - name: Preparer Capacitor
         run: |
+          mkdir -p /tmp/apk && cd /tmp/apk
+          npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
           mkdir -p dist
           echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>Chargement de Carnet du Boutiquier...</body></html>' > dist/index.html
@@ -47,15 +44,18 @@ jobs:
           }
           EOF
           npx cap add android
-          
-            - name: Compiler APK
+
+      - name: Compiler APK
         run: |
-          cd android
+          cd /tmp/apk/android
           chmod +x gradlew
           ./gradlew assembleDebug
+          cp app/build/outputs/apk/debug/app-debug.apk $GITHUB_WORKSPACE/carnet-du-boutiquier.apk
 
-      - name: Publier le fichier APK
-        uses: actions/upload-artifact@v4
+      - name: Publier la version
+        uses: softprops/action-gh-release@v2
         with:
-          name: carnet-du-boutiquier-apk
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          tag_name: apk-${{ github.run_number }}
+          name: Carnet du Boutiquier Android ${{ github.run_number }}
+          make_latest: true
+          files: carnet-du-boutiquier.apk
