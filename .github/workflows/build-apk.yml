@@ -27,9 +27,10 @@ jobs:
 
       - name: Preparer Capacitor
         run: |
-          mkdir -p /tmp/apk && cd /tmp/apk
+          mkdir -p /tmp/apk
+          cd /tmp/apk
           npm init -y
-          npm install @capacitor/core @capacitor/cli @capacitor/android
+          npm install @capacitor/core@6 @capacitor/cli@6 @capacitor/android@6
           mkdir -p dist
           echo '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"></head><body>Chargement de Carnet du Boutiquier...</body></html>' > dist/index.html
           cat > capacitor.config.json <<'EOF'
@@ -50,7 +51,7 @@ jobs:
           cd /tmp/apk/android
           chmod +x gradlew
           ./gradlew assembleDebug
-          cp app/build/outputs/apk/debug/app-debug.apk $GITHUB_WORKSPACE/carnet-du-boutiquier.apk
+          cp app/build/outputs/apk/debug/app-debug.apk "$GITHUB_WORKSPACE/carnet-du-boutiquier.apk"
 
       - name: Publier la version
         uses: softprops/action-gh-release@v2
